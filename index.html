@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dream Detector - AI Dream Interpreter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: 2px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: #ffd700;
+            transform: translateY(-2px);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background: #ffd700;
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        .title {
+            font-size: 48px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 20px;
+            animation: fadeInUp 1s ease;
+        }
+
+        .subtitle {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 60px;
+            animation: fadeInUp 1s ease 0.2s both;
+        }
+
+        .chat-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            animation: fadeInUp 1s ease 0.4s both;
+        }
+
+        .bot-message {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 4px solid #667eea;
+        }
+
+        .bot-avatar {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            color: white;
+            font-weight: bold;
+            margin-right: 15px;
+            vertical-align: top;
+        }
+
+        .bot-content {
+            display: inline-block;
+            vertical-align: top;
+            width: calc(100% - 55px);
+        }
+
+        .bot-name {
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .bot-text {
+            color: #444;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .tip {
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            color: #666;
+            font-style: italic;
+            border-left: 3px solid #ffd700;
+        }
+
+        .input-section {
+            margin-top: 30px;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .dream-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+            resize: none;
+            min-height: 60px;
+        }
+
+        .dream-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .send-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 100px;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .disclaimer {
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+            margin-top: 20px;
+            line-height: 1.4;
+        }
+
+        .interpretation-result {
+            background: #f0f8ff;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            border-left: 4px solid #4169e1;
+            display: none;
+        }
+
+        .interpretation-title {
+            font-weight: 700;
+            color: #4169e1;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .interpretation-text {
+            color: #444;
+            line-height: 1.6;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #667eea;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .title {
+                font-size: 36px;
+            }
+            
+            .chat-container {
+                padding: 20px;
+                margin: 0 20px;
+            }
+            
+            .input-container {
+                flex-direction: column;
+            }
+            
+            .send-btn {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <div class="logo">DREAM DETECTOR</div>
+                <ul class="nav-links">
+                    
+                    <li><a href="#interpreter" style="background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px;">AI Dream Interpreter</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <h1 class="title">What are your dreams telling you?</h1>
+            <p class="subtitle">Share your dream for a free, instant interpretation</p>
+
+            <div class="chat-container">
+                <div class="bot-message">
+                    <div class="bot-avatar">🤖</div>
+                    <div class="bot-content">
+                        <div class="bot-name">DreamyBot:</div>
+                        <div class="bot-text">
+                            Hi, I'm DreamyBot ✨ Share your dream with me and I'll do my best to interpret it for you! The more detail you can provide, the better.
+                        </div>
+                        <div class="tip">
+                            <strong>Tip:</strong> Include your age and gender at the time of your dream for a more insightful interpretation.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-section">
+                    <div class="input-container">
+                        <textarea 
+                            class="dream-input" 
+                            placeholder="Chat with DreamyBot..." 
+                            rows="3"
+                            id="dreamInput"
+                        ></textarea>
+                        <button class="send-btn" id="sendBtn" onclick="interpretDream()">Send</button>
+                    </div>
+                </div>
+
+                <div class="loading" id="loading">
+                    Interpreting your dream...
+                </div>
+
+                <div class="interpretation-result" id="interpretationResult">
+                    <div class="interpretation-title">🌙 Dream Interpretation</div>
+                    <div class="interpretation-text" id="interpretationText"></div>
+                </div>
+
+                <div class="disclaimer">
+                    By using DreamyBot, you affirm that you are at least 13 years old and agree to our Terms of Service and Privacy Policy.<br>
+                    This service is not intended for children under 13.
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const dreamInput = document.getElementById('dreamInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const loading = document.getElementById('loading');
+        const interpretationResult = document.getElementById('interpretationResult');
+        const interpretationText = document.getElementById('interpretationText');
+
+        // Sample dream interpretations for demo
+        const dreamInterpretations = [
+            "Dreams about flying often represent a desire for freedom and escape from limitations in your waking life. This could indicate that you're feeling constrained by circumstances or relationships and your subconscious is yearning for liberation. The act of soaring through the sky symbolizes rising above challenges and gaining a new perspective on your problems.",
+            
+            "Water in dreams typically symbolizes emotions and the unconscious mind. If the water was calm, it might represent peace and tranquility in your emotional state. Turbulent water could suggest emotional turmoil or overwhelming feelings you're currently experiencing. The depth and clarity of the water can also provide clues about how well you understand your own emotions.",
+            
+            "Dreams about being chased often reflect feelings of anxiety, stress, or avoidance in your waking life. The pursuer might represent a problem, responsibility, or aspect of yourself that you're trying to avoid confronting. Consider what or who was chasing you - this could provide insight into what you're running from in reality.",
+            
+            "Dreaming of animals can represent your instincts, desires, or aspects of your personality. Different animals carry different symbolic meanings - for example, a lion might represent courage or aggression, while a rabbit could symbolize gentleness or fertility. The animal's behavior in your dream is also significant.",
+            
+            "Dreams about falling often occur during times of stress or when you feel like you're losing control in some area of your life. This could relate to work, relationships, or personal goals. The dream reflects your subconscious fears about failure or not being able to maintain your current position or status."
+        ];
+
+        dreamInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                interpretDream();
+            }
+        });
+
+        function interpretDream() {
+            const dreamText = dreamInput.value.trim();
+            
+            if (!dreamText) {
+                alert('Please describe your dream first!');
+                return;
+            }
+
+            // Show loading
+            loading.style.display = 'block';
+            interpretationResult.style.display = 'none';
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Interpreting...';
+
+            // Simulate AI processing time
+            setTimeout(() => {
+                // Get a random interpretation (in a real app, this would be AI-generated)
+                const randomInterpretation = dreamInterpretations[Math.floor(Math.random() * dreamInterpretations.length)];
+                
+                // Add some personalization based on dream content
+                let personalizedInterpretation = randomInterpretation;
+                if (dreamText.toLowerCase().includes('water')) {
+                    personalizedInterpretation = dreamInterpretations[1];
+                } else if (dreamText.toLowerCase().includes('fly') || dreamText.toLowerCase().includes('flying')) {
+                    personalizedInterpretation = dreamInterpretations[0];
+                } else if (dreamText.toLowerCase().includes('chase') || dreamText.toLowerCase().includes('running')) {
+                    personalizedInterpretation = dreamInterpretations[2];
+                } else if (dreamText.toLowerCase().includes('animal') || dreamText.toLowerCase().includes('dog') || dreamText.toLowerCase().includes('cat')) {
+                    personalizedInterpretation = dreamInterpretations[3];
+                } else if (dreamText.toLowerCase().includes('fall') || dreamText.toLowerCase().includes('falling')) {
+                    personalizedInterpretation = dreamInterpretations[4];
+                }
+
+                // Show interpretation
+                interpretationText.textContent = personalizedInterpretation;
+                loading.style.display = 'none';
+                interpretationResult.style.display = 'block';
+                
+                // Reset button
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send';
+                
+                // Clear input
+                dreamInput.value = '';
+                
+                // Scroll to result
+                interpretationResult.scrollIntoView({ behavior: 'smooth' });
+            }, 2000 + Math.random() * 2000); // Random delay between 2-4 seconds
+        }
+
+        // Add some interactive effects
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add hover effects to navigation
+            const navLinks = document.querySelectorAll('.nav-links a');
+            navLinks.forEach(link => {
+                link.addEventListener('mouseenter', function() {
+                    this.style.textShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
+                });
+                link.addEventListener('mouseleave', function() {
+                    this.style.textShadow = 'none';
+                });
+            });
+
+            // Add focus effect to input
+            dreamInput.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+                this.parentElement.style.transition = 'transform 0.3s ease';
+            });
+
+            dreamInput.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
